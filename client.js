@@ -58,6 +58,16 @@ window.__ModuleLoader__.load({
       .dtr-toolbar, .dtr-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
       .dtr-toolbar label, .dtr-field label, .dtr-model-label { font-size: 14px; font-weight: 600; }
       .dtr-model { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-inline-start: auto; }
+      .dtr-model-picker { position: relative; }
+      .dtr-model-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; min-width: 210px; max-width: 320px; text-align: start; }
+      .dtr-model-trigger-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .dtr-model-menu { position: absolute; z-index: 30; inset-block-start: calc(100% + 8px); inset-inline-end: 0; width: min(360px, 78vw); max-height: 360px; overflow: auto; padding: 8px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 18px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 14px 35px rgb(0 0 0 / 16%); scrollbar-width: thin; }
+      .dtr-model-group { padding: 5px 4px 7px; }
+      .dtr-model-group + .dtr-model-group { border-block-start: 1px solid var(--dsw-alias-border-l1, #ededed); }
+      .dtr-model-group-title { padding: 4px 10px 6px; color: var(--dsw-alias-label-secondary, #777); font-size: 12px; font-weight: 600; }
+      .dtr-model-option { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border: 0; border-radius: 11px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; }
+      .dtr-model-option:hover, .dtr-model-option[aria-selected=true] { background: var(--dsw-alias-bg-layer-2, #f3f3f3); }
+      .dtr-model-option-provider { color: var(--dsw-alias-label-secondary, #777); font-size: 12px; }
       .dtr-control { box-sizing: border-box; min-height: 44px; padding: 0 16px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; color: inherit; font: inherit; font-size: 14px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 1px 2px rgb(0 0 0 / 7%); }
       .dtr-control:is(button, select) { cursor: pointer; }
       .dtr-language { position: relative; }
@@ -121,28 +131,53 @@ window.__ModuleLoader__.load({
       return { ...catalog, load }
     }
 
+    function modelName(item, fallback) {
+      return item?.name || item?.title || item?.label || item?.model || item?.id || fallback
+    }
+
+    function modelGroups(catalog) {
+      const groups = catalog?.groups || []
+      return groups.map((group, groupIndex) => {
+        const items = group.models || group.items || group.entries || []
+        const options = items.map((item, itemIndex) => {
+          const selection = item.selection || {
+            provider: item.provider || group.provider,
+            model: item.model || item.id,
+            ...(item.reasoningEffort ? { reasoningEffort: item.reasoningEffort } : {}),
+          }
+          if (!selection.provider || !selection.model) return null
+          return { selection, label: modelName(item, selection.model), provider: selection.provider, key: selection.provider + ':' + selection.model + ':' + (selection.reasoningEffort || itemIndex) }
+        }).filter(Boolean)
+        return { label: group.label || group.name || group.provider || ('Group ' + (groupIndex + 1)), options }
+      }).filter(group => group.options.length)
+    }
+
     function TranslationModel({ form, modelUi, locked, pending, setPending, t }) {
       const snapshot = useConfig(form)
-      const Picker = useSyncExternalStore(modelUi.subscribePicker, modelUi.getPicker)
       const catalog = useCatalog(modelUi)
+      const [open, setOpen] = useState(false)
+      const root = useRef(null)
       const [resetFailed, setResetFailed] = useState(false)
       const selected = snapshot.value?.selection
-      const state = {
-        current: selected ?? catalog.value?.default ?? null,
-        groups: catalog.value?.groups ?? [], failures: catalog.value?.failures ?? [],
-        status: catalog.status, error: catalog.status === 'error' ? t('catalogFailed') : null, pending,
-      }
-      const directory = { subscribe: () => () => {}, getSnapshot: () => state }
+      const current = selected ?? catalog.value?.default ?? null
+      const groups = modelGroups(catalog.value)
+      const currentLabel = modelName(current, t('followDefault'))
       const disabled = locked || pending !== null || !snapshot.writable
+
+      useEffect(() => {
+        if (!open) return undefined
+        const close = event => { if (!root.current?.contains(event.target)) setOpen(false) }
+        document.addEventListener('pointerdown', close)
+        return () => document.removeEventListener('pointerdown', close)
+      }, [open])
 
       async function choose(selection) {
         if (disabled) return
         setPending(selection ?? selected)
         setResetFailed(false)
+        setOpen(false)
         try {
-          const accepted = selection
-            ? await form.set('selection', selection)
-            : await form.unset('selection')
+          const accepted = selection ? await form.set('selection', selection) : await form.unset('selection')
           if (accepted) return { ok: true }
         } catch {
           // 设置服务会恢复上一次已接受的配置。
@@ -153,15 +188,22 @@ window.__ModuleLoader__.load({
         setResetFailed(true)
       }
 
-      // 复用会话里的模型选择组件，将选择保存到翻译自己的设置。
       return h('div', { className: 'dtr-model', role: 'group', 'aria-label': t('model') },
         h('span', { className: 'dtr-model-label' }, t('model')),
-        Picker ? h(Picker, {
-          available: true, locked: disabled, directory, load: catalog.load, select: choose,
-          t: modelUi.t, resolveText: modelUi.resolveText, renderSlot: (_slot, _props, options) => options?.fallback,
-        }) : h('span', { className: 'dtr-hint' }, t('pickerUnavailable')),
-        selected && h('button', { className: 'dtr-control', type: 'button', disabled,
-          onClick: () => void choose(null) }, t('followDefault')),
+        h('div', { className: 'dtr-model-picker', ref: root },
+          h('button', { className: 'dtr-control dtr-model-trigger', type: 'button', disabled: disabled || catalog.status === 'loading',
+            'aria-haspopup': 'listbox', 'aria-expanded': open, onClick: () => setOpen(previous => !previous) },
+          h('span', { className: 'dtr-model-trigger-text' }, catalog.status === 'error' ? t('catalogFailed') : currentLabel),
+          h('span', { className: 'dtr-chevron', 'aria-hidden': true })),
+          open && h('div', { className: 'dtr-model-menu', role: 'listbox', 'aria-label': t('model') },
+            groups.length ? groups.map(group => h('div', { className: 'dtr-model-group', key: group.label },
+              h('div', { className: 'dtr-model-group-title' }, group.label),
+              group.options.map(option => h('button', { className: 'dtr-model-option', type: 'button', key: option.key, role: 'option',
+                'aria-selected': option.selection.provider === current?.provider && option.selection.model === current?.model,
+                onClick: () => void choose(option.selection) },
+              h('span', null, option.label), h('span', { className: 'dtr-model-option-provider' }, option.provider)))))
+            : h('p', { className: 'dtr-hint' }, t('catalogFailed')))),
+        selected && h('button', { className: 'dtr-control', type: 'button', disabled, onClick: () => void choose(null) }, t('followDefault')),
         resetFailed && h('span', { className: 'dtr-error', role: 'alert' }, t('modelSaveFailed')))
     }
 
