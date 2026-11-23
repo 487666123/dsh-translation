@@ -20,9 +20,9 @@ const languageNames = new Intl.DisplayNames(['en'], { type: 'language', fallback
 export const Config = z.object({
   prompt: z.string().max(8_000).default(DEFAULT_PROMPT).volatile(),
   selection: z.object({
-    provider: z.string().required(),
-    model: z.string().required(),
-    reasoningEffort: z.string(),
+    provider: z.string().default(undefined),
+    model: z.string().default(undefined),
+    reasoningEffort: z.string().default(undefined),
   }).default(undefined).volatile(),
 })
 
