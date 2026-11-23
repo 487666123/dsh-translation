@@ -233,7 +233,7 @@ window.__ModuleLoader__.load({
       function handleSourceKeyDown(event) {
         if (event.key !== 'Enter') return
         const input = event.currentTarget
-        if (event.ctrlKey) {
+        if (event.shiftKey) {
           event.preventDefault()
           const start = input.selectionStart
           const end = input.selectionEnd
