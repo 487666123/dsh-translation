@@ -1,0 +1,29 @@
+{
+  "name": "@local/dsh-translation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Translate text with the configured DeepSeek Harness model.",
+  "engines": {
+    "dsh": "0.2.2-rc.5"
+  },
+  "exports": {
+    ".": "./translation.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-model-selection"
+      ]
+    }
+  }
+}
