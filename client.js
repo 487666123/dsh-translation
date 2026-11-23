@@ -230,6 +230,25 @@ window.__ModuleLoader__.load({
         setError(null)
       }
 
+      function handleSourceKeyDown(event) {
+        if (event.key !== 'Enter') return
+        const input = event.currentTarget
+        if (event.ctrlKey) {
+          event.preventDefault()
+          const start = input.selectionStart
+          const end = input.selectionEnd
+          setSource(previous => previous.slice(0, start) + '\n' + previous.slice(end))
+          clearResult()
+          requestAnimationFrame(() => {
+            input.selectionStart = start + 1
+            input.selectionEnd = start + 1
+          })
+          return
+        }
+        event.preventDefault()
+        input.form?.requestSubmit()
+      }
+
       return h('form', { className: 'dtr-page', onSubmit: submit },
         h('h1', { className: 'dtr-title' }, h(Icon, { size: 24 }), t('title')),
         h('div', { className: 'dtr-toolbar' },
@@ -245,11 +264,7 @@ window.__ModuleLoader__.load({
             h('label', { htmlFor: field + '-source' }, t('source')),
             h('textarea', { className: 'dtr-control dtr-text', id: field + '-source', value: source,
               placeholder: t('sourcePlaceholder'), maxLength: MAX_SOURCE_LENGTH, readOnly: pending,
-              onKeyDown: event => {
-                if (event.key !== 'Enter' || event.ctrlKey) return
-                event.preventDefault()
-                event.currentTarget.form?.requestSubmit()
-              },
+              onKeyDown: handleSourceKeyDown,
               onChange: event => { setSource(event.target.value); clearResult() } })),
           h('div', { className: 'dtr-field' },
             h('label', { htmlFor: field + '-result' }, t('result')),
