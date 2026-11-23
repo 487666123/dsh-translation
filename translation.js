@@ -77,9 +77,6 @@ async function translate(ctx, input, config, signal) {
 }
 
 export function apply(ctx, config) {
-  ctx.inject(['settings'], child => {
-    child.effect(() => child.settings.configure({ auto: false }, ctx.fiber))
-  })
   const lifetime = new AbortController()
   ctx.effect(() => {
     const unregister = ctx.webServer.register({
