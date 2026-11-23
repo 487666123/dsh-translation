@@ -1,13 +1,30 @@
 window.__ModuleLoader__.load({
   id: '@local/dsh-translation',
   factory(require) {
-    const { createElement: h, useId, useEffect, useRef, useState, useSyncExternalStore } = require('react')
-    const id = 'text-translation'
-    const modelSlot = 'conversation.input.model'
-    const catalogEvents = ['llm/adapters-updated', 'llm/models-updated', 'settings/document-updated',
-      'credentials/record-updated', 'credentials/reference-updated']
-    const languages = ['zh-Hans', 'zh-Hant', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'pt', 'it', 'ru', 'ar', 'hi', 'id', 'vi', 'th', 'nl', 'tr', 'uk']
-    const copy = {
+    const {
+      createElement: h,
+      useEffect,
+      useId,
+      useRef,
+      useState,
+      useSyncExternalStore,
+    } = require('react')
+    const PLUGIN_ID = 'text-translation'
+    const MODEL_SLOT = 'conversation.input.model'
+    const CATALOG_EVENTS = [
+      'llm/adapters-updated',
+      'llm/models-updated',
+      'settings/document-updated',
+      'credentials/record-updated',
+      'credentials/reference-updated',
+    ]
+    const LANGUAGES = [
+      'zh-Hans', 'zh-Hant', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'pt', 'it',
+      'ru', 'ar', 'hi', 'id', 'vi', 'th', 'nl', 'tr', 'uk',
+    ]
+    const MAX_SOURCE_LENGTH = 30000
+    const MAX_PROMPT_LENGTH = 8000
+    const LOCALE_COPY = {
       zh: {
         title: '翻译', target: '目标语言', source: '原文', result: '译文',
         sourcePlaceholder: '输入或粘贴原文', resultPlaceholder: '译文将在这里显示',
@@ -34,32 +51,38 @@ window.__ModuleLoader__.load({
       },
     }
 
-    const styles = `
-      .dtr-page, .dtr-settings { color: var(--dsw-alias-label-primary); font: inherit; }
-      .dtr-page { display: flex; flex-direction: column; gap: 20px; box-sizing: border-box;
-        width: 100%; height: 100%; padding: 24px clamp(16px, 3vw, 36px); overflow: auto; }
-      .dtr-title { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 20px; font-weight: 600; }
-      .dtr-toolbar, .dtr-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    const STYLES = `
+      .dtr-page, .dtr-settings { color: var(--dsw-alias-label-primary, #171717); font: 16px / 24px Geist, "Geist Fallback", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif; }
+      .dtr-page { display: flex; flex-direction: column; gap: 28px; box-sizing: border-box; width: 100%; height: 100%; padding: 32px clamp(20px, 5vw, 72px); overflow: auto; background: var(--dsw-alias-bg-canvas, #fff); }
+      .dtr-title { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 28px; line-height: 1.2; font-weight: 700; letter-spacing: -.03em; }
+      .dtr-toolbar, .dtr-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
       .dtr-toolbar label, .dtr-field label, .dtr-model-label { font-size: 14px; font-weight: 600; }
       .dtr-model { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-inline-start: auto; }
-      .dtr-control { box-sizing: border-box; min-height: 34px; padding: 5px 12px; border-radius: 8px;
-        border: 1px solid var(--dsw-alias-border-l1); color: inherit; font: inherit; font-size: 14px;
-        background: var(--dsw-alias-bg-layer-1); }
+      .dtr-control { box-sizing: border-box; min-height: 44px; padding: 0 16px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; color: inherit; font: inherit; font-size: 14px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 1px 2px rgb(0 0 0 / 7%); }
       .dtr-control:is(button, select) { cursor: pointer; }
-      .dtr-primary { color: white; background: var(--dsw-alias-brand-primary, #4d6bfe); border-color: transparent; }
-      .dtr-control:disabled { opacity: .55; cursor: default; }
-      .dtr-control:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary, #4d6bfe); outline-offset: 2px; }
-      .dtr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1; gap: 16px; }
-      .dtr-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-      .dtr-text { display: block; width: 100%; flex: 1; min-height: 12rem; padding: 12px 14px;
-        resize: vertical; line-height: 1.55; border-radius: 12px; }
-      .dtr-output { background: var(--dsw-alias-bg-layer-2); }
-      .dtr-text::placeholder, .dtr-hint { color: var(--dsw-alias-label-secondary); }
-      .dtr-error { color: var(--dsw-alias-state-error-primary); margin: 0; font-size: 13px; }
-      .dtr-settings { display: grid; gap: 14px; max-width: 760px; }
+      .dtr-language { position: relative; }
+      .dtr-language-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-width: 194px; text-align: start; }
+      .dtr-chevron { width: 7px; height: 7px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+      .dtr-language-menu { position: absolute; z-index: 20; inset-block-start: calc(100% + 6px); inset-inline: 0; max-height: 320px; overflow: auto; padding: 6px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 8px 24px rgb(0 0 0 / 12%); scrollbar-width: thin; scrollbar-color: #d9d9d9 transparent; }
+      .dtr-language-menu::-webkit-scrollbar { width: 8px; }
+      .dtr-language-menu::-webkit-scrollbar-track { background: transparent; }
+      .dtr-language-menu::-webkit-scrollbar-thumb { min-height: 48px; border: 2px solid transparent; border-radius: 999px; background: #d9d9d9; background-clip: content-box; }
+      .dtr-language-menu::-webkit-scrollbar-thumb:hover { background: #bdbdbd; background-clip: content-box; }
+      .dtr-language-option { display: block; width: 100%; padding: 8px 12px; border: 0; border-radius: 10px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; }
+      .dtr-language-option:hover, .dtr-language-option[aria-selected=true] { background: var(--dsw-alias-bg-layer-2, #f3f3f3); }
+      .dtr-primary { color: #fff; background: var(--dsw-alias-brand-primary, #171717); border-color: transparent; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); }
+      .dtr-control:disabled { opacity: .5; cursor: default; }
+      .dtr-control:focus-visible { outline: 3px solid rgb(77 107 254 / 20%); outline-offset: 2px; }
+      .dtr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1; gap: 20px; }
+      .dtr-field { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+      .dtr-text { display: block; width: 100%; flex: 1; min-height: 14rem; padding: 16px 18px; resize: vertical; line-height: 1.6; border-radius: 22px; background: var(--dsw-alias-bg-layer-1, #fff); }
+      .dtr-output { background: var(--dsw-alias-bg-layer-2, #fafafa); }
+      .dtr-text::placeholder, .dtr-hint { color: var(--dsw-alias-label-secondary, #777); }
+      .dtr-error { color: var(--dsw-alias-state-error-primary, #c33); margin: 0; font-size: 13px; }
+      .dtr-settings { display: grid; gap: 16px; max-width: 760px; }
       .dtr-settings .dtr-text { min-height: 9rem; }
       .dtr-hint { margin: 0; font-size: 13px; }
-      @media (max-width: 760px) { .dtr-grid { grid-template-columns: minmax(0, 1fr); } }
+      @media (max-width: 760px) { .dtr-grid { grid-template-columns: minmax(0, 1fr); } .dtr-model { margin-inline-start: 0; } }
     `
 
     function Icon({ size = 18 }) {
@@ -142,6 +165,27 @@ window.__ModuleLoader__.load({
         resetFailed && h('span', { className: 'dtr-error', role: 'alert' }, t('modelSaveFailed')))
     }
 
+    function LanguageSelect({ id, value, disabled, names, onChange, label }) {
+      const [open, setOpen] = useState(false)
+      const root = useRef(null)
+      const selectedName = names.of(value) || value
+      useEffect(() => {
+        if (!open) return undefined
+        const close = event => { if (!root.current?.contains(event.target)) setOpen(false) }
+        document.addEventListener('pointerdown', close)
+        return () => document.removeEventListener('pointerdown', close)
+      }, [open])
+      return h('div', { className: 'dtr-language', ref: root },
+        h('button', { id, className: 'dtr-control dtr-language-trigger', type: 'button', disabled,
+          'aria-haspopup': 'listbox', 'aria-expanded': open, 'aria-label': label,
+          onClick: () => setOpen(previous => !previous) },
+        h('span', null, selectedName), h('span', { className: 'dtr-chevron', 'aria-hidden': true })),
+        open && h('div', { className: 'dtr-language-menu', role: 'listbox', 'aria-label': label },
+          LANGUAGES.map(code => h('button', { key: code, className: 'dtr-language-option', type: 'button',
+            role: 'option', 'aria-selected': code === value,
+            onClick: () => { onChange(code); setOpen(false) } }, names.of(code)))))
+    }
+
     function TranslationPage({ t, form, modelUi }) {
       const [target, setTarget] = useState('en')
       const [source, setSource] = useState('')
@@ -190,9 +234,8 @@ window.__ModuleLoader__.load({
         h('h1', { className: 'dtr-title' }, h(Icon, { size: 24 }), t('title')),
         h('div', { className: 'dtr-toolbar' },
           h('label', { htmlFor: field + '-target' }, t('target')),
-          h('select', { className: 'dtr-control', id: field + '-target', value: target, disabled: pending,
-            onChange: event => { setTarget(event.target.value); clearResult() } },
-          languages.map(code => h('option', { key: code, value: code }, names.of(code)))),
+          h(LanguageSelect, { id: field + '-target', value: target, disabled: pending, names,
+            label: t('target'), onChange: value => { setTarget(value); clearResult() } }),
           h('button', { className: 'dtr-control dtr-primary', type: 'submit', disabled: pending || modelPending !== null || !source.trim() },
             t(pending ? 'translating' : 'translate')),
           h(TranslationModel, { form, modelUi, t, locked: pending, pending: modelPending, setPending: setModelPending })),
@@ -201,7 +244,12 @@ window.__ModuleLoader__.load({
           h('div', { className: 'dtr-field' },
             h('label', { htmlFor: field + '-source' }, t('source')),
             h('textarea', { className: 'dtr-control dtr-text', id: field + '-source', value: source,
-              placeholder: t('sourcePlaceholder'), maxLength: 30000, readOnly: pending,
+              placeholder: t('sourcePlaceholder'), maxLength: MAX_SOURCE_LENGTH, readOnly: pending,
+              onKeyDown: event => {
+                if (event.key !== 'Enter' || event.ctrlKey) return
+                event.preventDefault()
+                event.currentTarget.form?.requestSubmit()
+              },
               onChange: event => { setSource(event.target.value); clearResult() } })),
           h('div', { className: 'dtr-field' },
             h('label', { htmlFor: field + '-result' }, t('result')),
@@ -240,7 +288,7 @@ window.__ModuleLoader__.load({
           h('label', { htmlFor: field }, t('prompt')),
           h('p', { className: 'dtr-hint', id: field + '-hint' }, t('promptHint', { targetLanguage: '{targetLanguage}' })),
           h('textarea', { className: 'dtr-control dtr-text', id: field, value: prompt,
-            'aria-describedby': field + '-hint', maxLength: 8000, readOnly: disabled,
+            'aria-describedby': field + '-hint', maxLength: MAX_PROMPT_LENGTH, readOnly: disabled,
             onChange: event => { setDraft(event.target.value); setStatus(null) } })),
         h('div', { className: 'dtr-actions' },
           h('button', { className: 'dtr-control dtr-primary', type: 'submit',
@@ -253,38 +301,38 @@ window.__ModuleLoader__.load({
     return {
       inject: ['slots', 'locale', 'configForms', 'remote', 'remote.session'],
       apply(ctx) {
-        ctx.effect(() => ctx.locale.register(id, copy), 'text-translation: locale')
+        ctx.effect(() => ctx.locale.register(PLUGIN_ID, LOCALE_COPY), 'text-translation: locale')
         ctx.effect(() => {
           const sheet = document.createElement('style')
-          sheet.textContent = styles
+          sheet.textContent = STYLES
           document.head.append(sheet)
           return () => sheet.remove()
         }, 'text-translation: styles')
-        const t = ctx.locale.bind(id)
-        const form = ctx.configForms.get(id)
+        const t = ctx.locale.bind(PLUGIN_ID)
+        const form = ctx.configForms.get(PLUGIN_ID)
         const modelUi = {
-          subscribePicker: listener => ctx.slots.subscribe(modelSlot, listener),
-          getPicker: () => ctx.slots.entries(modelSlot).find(entry => entry.locale === 'model')?.component,
+          subscribePicker: listener => ctx.slots.subscribe(MODEL_SLOT, listener),
+          getPicker: () => ctx.slots.entries(MODEL_SLOT).find(entry => entry.locale === 'model')?.component,
           loadCatalog: () => ctx.remote.session.modelCatalog(),
           subscribeCatalog(listener) {
-            const dispose = catalogEvents.map(event => ctx.remote.$on(event, listener))
+            const dispose = CATALOG_EVENTS.map(event => ctx.remote.$on(event, listener))
             dispose.push(ctx.on('connection/reset', listener))
             return () => dispose.forEach(remove => remove())
           },
           t: ctx.locale.bind('model'), resolveText: text => ctx.locale.resolveText(text),
         }
         ctx.slots.inject('main', () => ctx.slots.register({
-          name: 'main', key: id, locale: id, inject: () => ({ t, form, modelUi }),
+          name: 'main', key: PLUGIN_ID, locale: PLUGIN_ID, inject: () => ({ t, form, modelUi }),
         }, TranslationPage))
         ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
-          name: 'sidebar.panellist', id, order: 25, locale: id, label: () => t('title'),
+          name: 'sidebar.panellist', id: PLUGIN_ID, order: 25, locale: PLUGIN_ID, label: () => t('title'),
         }, Icon))
         ctx.slots.inject('settings.section', () => ctx.slots.register({
-          name: 'settings.section', id, order: 35, locale: id, label: () => t('title'),
+          name: 'settings.section', id: PLUGIN_ID, order: 35, locale: PLUGIN_ID, label: () => t('title'),
           inject: () => ({ form, t }),
         }, TranslationSettings))
         ctx.slots.inject('settings.section.icon', () => ctx.slots.register({
-          name: 'settings.section.icon', id,
+          name: 'settings.section.icon', id: PLUGIN_ID,
         }, Icon))
       },
     }
