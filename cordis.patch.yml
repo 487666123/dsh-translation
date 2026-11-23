@@ -1,3 +1,4 @@
 - insert:
     - id: text-translation
       name: '@local/dsh-translation'
+      config: {}

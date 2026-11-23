@@ -18,12 +18,12 @@ const MAX_BODY = 200_000
 const languageNames = new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' })
 
 export const Config = z.object({
-  prompt: z.string().max(8_000).default(DEFAULT_PROMPT),
+  prompt: z.string().max(8_000).default(DEFAULT_PROMPT).volatile(),
   selection: z.object({
-    provider: z.string().default(undefined),
-    model: z.string().default(undefined),
-    reasoningEffort: z.string().default(undefined),
-  }).default(undefined),
+    provider: z.string().required(),
+    model: z.string().required(),
+    reasoningEffort: z.string(),
+  }).default(undefined).volatile(),
 })
 
 function response(res, status, result) {
