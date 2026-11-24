@@ -39,12 +39,14 @@ function streamStart(res) {
     'cache-control': 'no-cache, no-store',
     connection: 'keep-alive',
   })
+  res.flushHeaders?.()
   return true
 }
 
 function streamEvent(res, event) {
   if (res.destroyed) return false
   res.write(JSON.stringify(event) + '\n')
+  res.flush?.()
   return true
 }
 

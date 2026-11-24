@@ -255,7 +255,7 @@ window.__ModuleLoader__.load({
               for (const line of lines) {
                 if (!line.trim()) continue
                 const event = JSON.parse(line)
-                if (event.type === 'text') setResult(event.text)
+                if (event.type === 'text' && typeof event.text === 'string') setResult(event.text)
                 if (event.type === 'error') { setError(['timeout', 'truncated', 'unauthorized'].includes(event.error) ? event.error : 'failed'); finished = true }
                 if (event.type === 'done') finished = true
               }
