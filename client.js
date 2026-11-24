@@ -210,10 +210,21 @@ window.__ModuleLoader__.load({
             onClick: () => { onChange(code); setOpen(false) } }, names.of(code)))))
     }
 
-    function TranslationPage({ t, form, modelUi }) {
-      const [target, setTarget] = useState('en')
-      const [source, setSource] = useState('')
-      const [result, setResult] = useState('')
+    // 草稿由插件持有，页面卸载后仍保留；同步写入以保留最后一个流式片段。
+    function useDraftState(draft, key) {
+      const [value, setValue] = useState(() => draft[key])
+      const update = next => {
+        const value = typeof next === 'function' ? next(draft[key]) : next
+        draft[key] = value
+        setValue(value)
+      }
+      return [value, update]
+    }
+
+    function TranslationPage({ t, form, modelUi, draft }) {
+      const [target, setTarget] = useDraftState(draft, 'target')
+      const [source, setSource] = useDraftState(draft, 'source')
+      const [result, setResult] = useDraftState(draft, 'result')
       const [error, setError] = useState(null)
       const [pending, setPending] = useState(false)
       const [modelPending, setModelPending] = useState(null)
@@ -376,6 +387,7 @@ window.__ModuleLoader__.load({
         }, 'text-translation: styles')
         const t = ctx.locale.bind(PLUGIN_ID)
         const form = ctx.configForms.get(PLUGIN_ID)
+        const draft = { target: 'en', source: '', result: '' }
         const modelUi = {
           subscribePicker: listener => ctx.slots.subscribe(MODEL_SLOT, listener),
           getPicker: () => ctx.slots.entries(MODEL_SLOT).find(entry => entry.locale === 'model')?.component,
@@ -388,7 +400,7 @@ window.__ModuleLoader__.load({
           t: ctx.locale.bind('model'), resolveText: text => ctx.locale.resolveText(text),
         }
         ctx.slots.inject('main', () => ctx.slots.register({
-          name: 'main', key: PLUGIN_ID, locale: PLUGIN_ID, inject: () => ({ t, form, modelUi }),
+          name: 'main', key: PLUGIN_ID, locale: PLUGIN_ID, inject: () => ({ t, form, modelUi, draft }),
         }, TranslationPage))
         ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
           name: 'sidebar.panellist', id: PLUGIN_ID, order: 25, locale: PLUGIN_ID, label: () => t('title'),
