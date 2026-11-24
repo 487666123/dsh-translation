@@ -32,6 +32,21 @@ function response(res, status, result) {
   res.end(JSON.stringify(result))
 }
 
+async function streamEvent(res, event) {
+  if (res.destroyed) return
+  const accepted = res.write('data: ' + JSON.stringify(event) + '\n\n')
+  if (accepted || res.destroyed) return
+  await new Promise(resolve => {
+    const resume = () => {
+      res.off('drain', resume)
+      res.off('close', resume)
+      resolve()
+    }
+    res.once('drain', resume)
+    res.once('close', resume)
+  })
+}
+
 
 async function readInput(req) {
   const chunks = []
@@ -52,7 +67,7 @@ async function readInput(req) {
   return { text: input.text, language }
 }
 
-async function translate(ctx, input, config, signal) {
+async function translate(ctx, input, config, signal, onText) {
   const template = config.prompt.get().trim() || DEFAULT_PROMPT
   const system = template.includes(TARGET)
     ? template.replaceAll(TARGET, input.language)
@@ -69,6 +84,8 @@ async function translate(ctx, input, config, signal) {
   })) {
     signal.throwIfAborted()
     assembler.push(chunk)
+    const text = assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
+    if (text) await onText(text)
   }
   signal.throwIfAborted()
   const translated = assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
@@ -110,11 +127,20 @@ export function apply(ctx, config) {
         res.once('close', disconnect)
         try {
           if (res.destroyed) return
-          const result = await translate(ctx, input, config, signal)
-          response(res, result.error ? 502 : 200, result)
+          res.writeHead(200, {
+            'content-type': 'text/event-stream; charset=utf-8',
+            'cache-control': 'no-cache, no-store',
+            connection: 'keep-alive',
+          })
+          res.flushHeaders()
+          await streamEvent(res, { type: 'ready' })
+          const result = await translate(ctx, input, config, signal, text => streamEvent(res, { type: 'text', text }))
+          await streamEvent(res, result.error ? { type: 'error', error: result.error } : { type: 'done' })
+          if (!res.destroyed) res.end()
         } catch {
-          if (!client.signal.aborted) {
-            response(res, timeout.aborted ? 504 : 502, { error: timeout.aborted ? 'timeout' : 'failed' })
+          if (!client.signal.aborted && !res.destroyed) {
+            await streamEvent(res, { type: 'error', error: timeout.aborted ? 'timeout' : 'failed' })
+            res.end()
           }
         } finally {
           res.off('close', disconnect)
