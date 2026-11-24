@@ -70,7 +70,7 @@ window.__ModuleLoader__.load({
       .dtr-model-option { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border: 0; border-radius: 11px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; }
       .dtr-model-option:hover, .dtr-model-option[aria-selected=true] { background: var(--dsw-alias-bg-layer-2, #f3f3f3); }
       .dtr-model-option-provider { color: var(--dsw-alias-label-secondary, #777); font-size: 12px; }
-      .dtr-control { box-sizing: border-box; min-height: 44px; padding: 0 16px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; color: inherit; font: inherit; font-size: 14px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 1px 2px rgb(0 0 0 / 7%); }
+      .dtr-control { box-sizing: border-box; min-height: 44px; padding: 0 20px; border: 1px solid #dbdbdb; border-radius: 16px; color: inherit; font: inherit; font-size: 14px; font-weight: 500; background: linear-gradient(#fff, #f7f7f7); box-shadow: 0 1px 2px rgb(0 0 0 / 7%); }
       .dtr-control:is(button, select) { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
       .dtr-language { position: relative; }
       .dtr-language-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-width: 194px; text-align: start; }
