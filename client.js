@@ -61,8 +61,8 @@ window.__ModuleLoader__.load({
       .dtr-model-picker { position: relative; }
       .dtr-dsh-picker { position: absolute; inset: 0; z-index: 2; overflow: hidden; opacity: 0; }
       .dtr-dsh-picker > *, .dtr-dsh-picker button { width: 100%; height: 100%; }
-      .dtr-model-trigger { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; min-width: 210px; max-width: 320px; text-align: center; pointer-events: none; }
-      .dtr-model-trigger-text { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .dtr-model-trigger { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; min-width: 210px; max-width: 320px; text-align: start; pointer-events: none; }
+      .dtr-model-trigger-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .dtr-model-menu { position: absolute; z-index: 30; inset-block-start: calc(100% + 8px); inset-inline-end: 0; width: min(360px, 78vw); max-height: 360px; overflow: auto; padding: 8px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 18px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 14px 35px rgb(0 0 0 / 16%); scrollbar-width: thin; }
       .dtr-model-group { padding: 5px 4px 7px; }
       .dtr-model-group + .dtr-model-group { border-block-start: 1px solid var(--dsw-alias-border-l1, #ededed); }
@@ -73,9 +73,8 @@ window.__ModuleLoader__.load({
       .dtr-control { box-sizing: border-box; min-height: 44px; padding: 0 16px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; color: inherit; font: inherit; font-size: 14px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 1px 2px rgb(0 0 0 / 7%); }
       .dtr-control:is(button, select) { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
       .dtr-language { position: relative; }
-      .dtr-language-trigger { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 194px; text-align: center; }
-      .dtr-language-trigger > span:first-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .dtr-chevron { position: absolute; inset-inline-end: 18px; width: 7px; height: 7px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+      .dtr-language-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-width: 194px; text-align: start; }
+      .dtr-chevron { width: 7px; height: 7px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); }
       .dtr-language-menu { position: absolute; z-index: 20; inset-block-start: calc(100% + 6px); inset-inline: 0; max-height: 320px; overflow: auto; padding: 6px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 8px 24px rgb(0 0 0 / 12%); scrollbar-width: thin; scrollbar-color: #d9d9d9 transparent; }
       .dtr-language-menu::-webkit-scrollbar { width: 8px; }
       .dtr-language-menu::-webkit-scrollbar-track { background: transparent; }
@@ -204,7 +203,7 @@ window.__ModuleLoader__.load({
         h('button', { id, className: 'dtr-control dtr-language-trigger', type: 'button', disabled,
           'aria-haspopup': 'listbox', 'aria-expanded': open, 'aria-label': label,
           onClick: () => setOpen(previous => !previous) },
-        h('span', { className: 'dtr-language-trigger-text' }, selectedName), h('span', { className: 'dtr-chevron', 'aria-hidden': true })),
+        h('span', null, selectedName), h('span', { className: 'dtr-chevron', 'aria-hidden': true })),
         open && h('div', { className: 'dtr-language-menu', role: 'listbox', 'aria-label': label },
           LANGUAGES.map(code => h('button', { key: code, className: 'dtr-language-option', type: 'button',
             role: 'option', 'aria-selected': code === value,
