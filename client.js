@@ -62,6 +62,7 @@ window.__ModuleLoader__.load({
       .dtr-dsh-picker { position: absolute; inset: 0; z-index: 2; overflow: hidden; opacity: 0; }
       .dtr-dsh-picker > *, .dtr-dsh-picker button { width: 100%; height: 100%; }
       .dtr-model-trigger { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; min-width: 210px; max-width: 320px; text-align: start; pointer-events: none; }
+      .dtr-model-trigger.dtr-primary { color: #fff; background: var(--dsw-alias-brand-primary, #171717); border-color: transparent; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); }
       .dtr-model-trigger-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .dtr-model-menu { position: absolute; z-index: 30; inset-block-start: calc(100% + 8px); inset-inline-end: 0; width: min(360px, 78vw); max-height: 360px; overflow: auto; padding: 8px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 18px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 14px 35px rgb(0 0 0 / 16%); scrollbar-width: thin; }
       .dtr-model-group { padding: 5px 4px 7px; }
@@ -176,9 +177,8 @@ window.__ModuleLoader__.load({
       }
 
       return h('div', { className: 'dtr-model', role: 'group', 'aria-label': t('model') },
-        h('span', { className: 'dtr-model-label' }, t('model')),
         h('div', { className: 'dtr-model-picker' },
-          h('button', { className: 'dtr-control dtr-model-trigger', type: 'button', disabled, onClick: openPicker,
+          h('button', { className: 'dtr-control dtr-primary dtr-model-trigger', type: 'button', disabled, onClick: openPicker,
             'aria-haspopup': 'listbox' },
           h('span', { className: 'dtr-model-trigger-text' }, currentLabel),
           h('span', { className: 'dtr-chevron', 'aria-hidden': true })),
