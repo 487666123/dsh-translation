@@ -32,6 +32,22 @@ function response(res, status, result) {
   res.end(JSON.stringify(result))
 }
 
+function streamStart(res) {
+  if (res.destroyed) return false
+  res.writeHead(200, {
+    'content-type': 'application/x-ndjson; charset=utf-8',
+    'cache-control': 'no-cache, no-store',
+    connection: 'keep-alive',
+  })
+  return true
+}
+
+function streamEvent(res, event) {
+  if (res.destroyed) return false
+  res.write(JSON.stringify(event) + '\n')
+  return true
+}
+
 async function readInput(req) {
   const chunks = []
   let size = 0
@@ -51,7 +67,7 @@ async function readInput(req) {
   return { text: input.text, language }
 }
 
-async function translate(ctx, input, config, signal) {
+async function translate(ctx, input, config, signal, onText) {
   const template = config.prompt.get().trim() || DEFAULT_PROMPT
   const system = template.includes(TARGET)
     ? template.replaceAll(TARGET, input.language)
@@ -68,6 +84,8 @@ async function translate(ctx, input, config, signal) {
   })) {
     signal.throwIfAborted()
     assembler.push(chunk)
+    const text = assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
+    if (text) onText(text)
   }
   signal.throwIfAborted()
   const translated = assembler.blocks().filter(block => block.type === 'text').map(block => block.text).join('')
@@ -108,12 +126,15 @@ export function apply(ctx, config) {
         const disconnect = () => client.abort()
         res.once('close', disconnect)
         try {
-          if (res.destroyed) return
-          const result = await translate(ctx, input, config, signal)
-          response(res, result.error ? 502 : 200, result)
+          if (!streamStart(res)) return
+          const result = await translate(ctx, input, config, signal, text => streamEvent(res, { type: 'text', text }))
+          if (result.error) streamEvent(res, { type: 'error', error: result.error })
+          else streamEvent(res, { type: 'done' })
+          if (!res.destroyed) res.end()
         } catch {
-          if (!client.signal.aborted) {
-            response(res, timeout.aborted ? 504 : 502, { error: timeout.aborted ? 'timeout' : 'failed' })
+          if (!client.signal.aborted && !res.destroyed) {
+            streamEvent(res, { type: 'error', error: timeout.aborted ? 'timeout' : 'failed' })
+            res.end()
           }
         } finally {
           res.off('close', disconnect)
