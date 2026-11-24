@@ -34,7 +34,7 @@ window.__ModuleLoader__.load({
         saveFailed: '保存失败，请重试。', failed: '翻译失败，请检查所选模型的配置后重试。',
         truncated: '译文超过模型输出上限，请分段翻译。', timeout: '翻译超时，请重试。',
         unauthorized: '当前连接无权发起翻译。',
-        model: '模型', followDefault: '跟随 DSH 默认模型', pickerUnavailable: '模型选择框暂不可用。',
+        model: '模型', followDefault: '跟随默认', pickerUnavailable: '模型选择框暂不可用。',
         catalogFailed: '无法加载 DSH 模型列表。', modelSaveFailed: '模型设置保存失败，请重试。',
       },
       en: {
