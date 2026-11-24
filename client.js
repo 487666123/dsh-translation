@@ -237,31 +237,10 @@ window.__ModuleLoader__.load({
             body: JSON.stringify({ target, text: source }),
             signal: controller.signal,
           })
-          if (!reply.ok) {
-            const data = await reply.json().catch(() => ({}))
-            if (!controller.signal.aborted) setError(['timeout', 'truncated', 'unauthorized'].includes(data.error) ? data.error : 'failed')
-          } else if (!reply.body) {
-            setError('failed')
-          } else {
-            const reader = reply.body.getReader()
-            const decoder = new TextDecoder()
-            let buffer = ''
-            let finished = false
-            while (!finished) {
-              const part = await reader.read()
-              buffer += decoder.decode(part.value || new Uint8Array(), { stream: !part.done })
-              const lines = buffer.split('\n')
-              buffer = lines.pop() || ''
-              for (const line of lines) {
-                if (!line.trim()) continue
-                const event = JSON.parse(line)
-                if (event.type === 'text' && typeof event.text === 'string') setResult(event.text)
-                if (event.type === 'error') { setError(['timeout', 'truncated', 'unauthorized'].includes(event.error) ? event.error : 'failed'); finished = true }
-                if (event.type === 'done') finished = true
-              }
-              if (part.done) finished = true
-            }
-          }
+          const data = await reply.json()
+          if (controller.signal.aborted) return
+          if (reply.ok && typeof data.translated === 'string') setResult(data.translated)
+          else setError(['timeout', 'truncated', 'unauthorized'].includes(data.error) ? data.error : 'failed')
         } catch {
           if (!controller.signal.aborted) setError('failed')
         } finally {
