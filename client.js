@@ -83,7 +83,7 @@ window.__ModuleLoader__.load({
       .dtr-language-option { display: block; width: 100%; padding: 8px 12px; border: 0; border-radius: 10px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; }
       .dtr-language-option:hover { background: var(--dsw-alias-bg-layer-2, #f3f3f3); }
       .dtr-language-option[aria-selected=true] { background: #eef1ff; color: #4058c8; font-weight: 600; }
-      .dtr-primary { color: #fff; background: var(--dsw-alias-brand-primary, #171717); border-color: transparent; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); }
+      .dtr-primary { box-sizing: border-box; min-height: 44px; padding-inline: 20px 16px; border: 1px solid transparent; border-radius: 16px; color: #fff; background: linear-gradient(#333, #121214); font-size: 14px; font-weight: 500; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); }
       .dtr-control:disabled { opacity: .5; cursor: default; }
       .dtr-control:focus-visible { outline: 3px solid rgb(77 107 254 / 20%); outline-offset: 2px; }
       .dtr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1; gap: 20px; }
