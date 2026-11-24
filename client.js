@@ -226,6 +226,8 @@ window.__ModuleLoader__.load({
         event.preventDefault()
         if (request.current || modelPending !== null || !source.trim()) return
         const controller = new AbortController()
+        let timedOut = false
+        const timeout = setTimeout(() => { timedOut = true; controller.abort() }, 30_000)
         request.current = controller
         setPending(true)
         setError(null)
@@ -242,8 +244,10 @@ window.__ModuleLoader__.load({
           if (reply.ok && typeof data.translated === 'string') setResult(data.translated)
           else setError(['timeout', 'truncated', 'unauthorized'].includes(data.error) ? data.error : 'failed')
         } catch {
-          if (!controller.signal.aborted) setError('failed')
+          if (timedOut) setError('timeout')
+          else if (!controller.signal.aborted) setError('failed')
         } finally {
+          clearTimeout(timeout)
           request.current = null
           if (!controller.signal.aborted) setPending(false)
         }
