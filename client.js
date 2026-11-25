@@ -61,7 +61,9 @@ window.__ModuleLoader__.load({
       .dtr-model-picker { position: relative; }
       .dtr-dsh-picker { position: absolute; inset: 0; z-index: 2; overflow: hidden; opacity: 0; }
       .dtr-dsh-picker > *, .dtr-dsh-picker button { width: 100%; height: 100%; }
-      .dtr-control.dtr-model-trigger { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; min-width: 210px; max-width: 320px; padding: 0 20px; border-color: #dbdbdb; color: #171717; font-weight: 500; background: linear-gradient(#fff, #f7f7f7); box-shadow: 0 1px 2px rgb(0 0 0 / 7%); text-align: start; pointer-events: none; }
+      .dtr-control.dtr-model-trigger { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; min-width: 210px; max-width: 320px; padding: 0 20px; border-color: #d9d9d9; color: #171717; font-weight: 500; background: linear-gradient(#fff, #f5f5f5); box-shadow: 0 1px 2px #00000012; text-align: start; pointer-events: none; transition: all 150ms cubic-bezier(.4, 0, .2, 1); }
+      .dtr-model-picker:hover .dtr-model-trigger, .dtr-model-picker:focus-within .dtr-model-trigger, .dtr-model-picker:has(.dtr-dsh-picker button[aria-expanded=true]) .dtr-model-trigger { filter: brightness(.98); }
+      .dtr-model-picker:has(.dtr-dsh-picker button:active) .dtr-model-trigger { transform: translateY(1px); box-shadow: inset 0 1px 2px #0000001a; }
       .dtr-model-trigger-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .dtr-model-menu { position: absolute; z-index: 30; inset-block-start: calc(100% + 8px); inset-inline-end: 0; width: min(360px, 78vw); max-height: 360px; overflow: auto; padding: 8px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 18px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 14px 35px rgb(0 0 0 / 16%); scrollbar-width: thin; }
       .dtr-model-group { padding: 5px 4px 7px; }
