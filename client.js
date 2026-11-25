@@ -81,7 +81,7 @@ window.__ModuleLoader__.load({
       .dtr-language-menu::-webkit-scrollbar-thumb { min-height: 48px; border: 2px solid transparent; border-radius: 999px; background: #d9d9d9; background-clip: content-box; }
       .dtr-language-menu::-webkit-scrollbar-thumb:hover { background: #bdbdbd; background-clip: content-box; }
       .dtr-language-option { display: block; width: 100%; padding: 8px 12px; border: 0; border-radius: 10px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; }
-      .dtr-language-option:hover { background: var(--dsw-alias-bg-layer-2, #f3f3f3); }
+      .dtr-language-option:hover, .dtr-language-option:focus-visible { background: #eef1ff; color: #4058c8; outline: none; }
       .dtr-language-option[aria-selected=true] { background: #eef1ff; color: #4058c8; font-weight: 600; }
       .dtr-primary { box-sizing: border-box; min-height: 44px; padding-inline: 16px; border: 1px solid transparent; border-radius: 16px; color: #fff; background: linear-gradient(#333, #121214); font-size: 14px; font-weight: 500; text-align: center; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); }
       .dtr-control:disabled { opacity: .5; cursor: default; }
