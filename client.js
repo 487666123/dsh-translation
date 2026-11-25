@@ -75,12 +75,12 @@ window.__ModuleLoader__.load({
       .dtr-language { position: relative; }
       .dtr-control.dtr-language-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-width: 194px; padding: 0 16px; border-color: #dbdbdb; color: inherit; font-weight: 400; background: linear-gradient(#fff, #f7f7f7); text-align: start; }
       .dtr-chevron { width: 7px; height: 7px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); }
-      .dtr-language-menu { position: absolute; z-index: 20; inset-block-start: calc(100% + 6px); inset-inline: 0; max-height: 320px; overflow: auto; padding: 6px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 8px 24px rgb(0 0 0 / 12%); scrollbar-width: thin; scrollbar-color: #d9d9d9 transparent; }
+      .dtr-language-menu { position: absolute; z-index: 20; inset-block-start: calc(100% + 6px); inset-inline: 0; display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow: auto; padding: 6px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 8px 24px rgb(0 0 0 / 12%); scrollbar-width: thin; scrollbar-color: #d9d9d9 transparent; }
       .dtr-language-menu::-webkit-scrollbar { width: 8px; }
       .dtr-language-menu::-webkit-scrollbar-track { background: transparent; }
       .dtr-language-menu::-webkit-scrollbar-thumb { min-height: 48px; border: 2px solid transparent; border-radius: 999px; background: #d9d9d9; background-clip: content-box; }
       .dtr-language-menu::-webkit-scrollbar-thumb:hover { background: #bdbdbd; background-clip: content-box; }
-      .dtr-language-option { display: block; width: 100%; margin-block: 4px; padding: 8px 12px; border: 0; border-radius: 13px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; transition: background-color 150ms ease, color 150ms ease; }
+      .dtr-language-option { display: block; flex: 0 0 auto; width: 100%; padding: 8px 12px; border: 0; border-radius: 13px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; transition: background-color 150ms ease, color 150ms ease; }
       .dtr-language-option:hover, .dtr-language-option:focus-visible { background: #f5f5f5; color: #171717; outline: none; }
       .dtr-language-option[aria-selected=true] { background: #eef1ff; color: #4058c8; font-weight: 600; }
       .dtr-primary { box-sizing: border-box; min-height: 44px; padding-inline: 16px; border: 1px solid transparent; border-radius: 16px; color: #fff; background: linear-gradient(#333, #121214); font-size: 14px; font-weight: 500; text-align: center; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); }
