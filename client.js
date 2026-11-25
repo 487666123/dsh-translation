@@ -83,9 +83,9 @@ window.__ModuleLoader__.load({
       .dtr-language-option { display: block; flex: 0 0 auto; width: 100%; padding: 8px 12px; border: 0; border-radius: 13px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; transition: background-color 150ms ease, color 150ms ease; }
       .dtr-language-option:hover, .dtr-language-option:focus-visible { background: #f5f5f5; color: #171717; outline: none; }
       .dtr-language-option[aria-selected=true] { background: #eef1ff; color: #4058c8; font-weight: 600; }
-      .dtr-primary { box-sizing: border-box; min-height: 44px; padding-inline: 16px; border: 1px solid transparent; border-radius: 16px; color: #fff; background: linear-gradient(#333, #121214); font-size: 14px; font-weight: 500; text-align: center; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); transition: filter 150ms ease, transform 150ms ease, box-shadow 150ms ease; }
+      .dtr-primary { box-sizing: border-box; min-height: 44px; padding-inline: 16px; border: 1px solid transparent; border-radius: 16px; color: #fff; background: linear-gradient(#333, #121214); font-size: 14px; font-weight: 500; text-align: center; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); transition: all 150ms cubic-bezier(.4, 0, .2, 1); }
       .dtr-primary:not(:disabled):hover { filter: brightness(.98); }
-      .dtr-primary:not(:disabled):active { transform: translateY(1px); box-shadow: inset 0 1px rgb(255 255 255 / 12%), 0 0 1px rgb(0 0 0 / 24%); }
+      .dtr-primary:not(:disabled):active { transform: translateY(1px); box-shadow: inset 0 1px 2px #0000001a; }
       .dtr-control:disabled { opacity: .5; cursor: default; }
       .dtr-control:focus-visible { outline: 3px solid rgb(77 107 254 / 20%); outline-offset: 2px; }
       .dtr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1; gap: 20px; }
