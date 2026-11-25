@@ -75,14 +75,15 @@ window.__ModuleLoader__.load({
       .dtr-language { position: relative; }
       .dtr-control.dtr-language-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; min-width: 194px; padding: 0 16px; border-color: #dbdbdb; color: inherit; font-weight: 400; background: linear-gradient(#fff, #f7f7f7); text-align: start; }
       .dtr-chevron { width: 7px; height: 7px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); }
-      .dtr-language-menu { position: absolute; z-index: 20; inset-block-start: calc(100% + 6px); inset-inline: 0; display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow: auto; padding: 6px; border: 1px solid var(--dsw-alias-border-l1, #e2e2e2); border-radius: 16px; background: var(--dsw-alias-bg-layer-1, #fff); box-shadow: 0 8px 24px rgb(0 0 0 / 12%); scrollbar-width: thin; scrollbar-color: #d9d9d9 transparent; }
+      .dtr-language-menu { position: absolute; z-index: 20; inset-block-start: calc(100% + 6px); inset-inline: 0; display: flex; flex-direction: column; gap: 4px; max-height: min(26rem, 70vh); overflow: auto; padding: 6px; border: 0; border-radius: 16px; color: #070707; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 10%), 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%); scrollbar-width: thin; scrollbar-color: #d9d9d9 transparent; animation: dtr-menu-in 150ms cubic-bezier(.4, 0, .2, 1); }
+      @keyframes dtr-menu-in { from { opacity: 0; transform: translateY(-8px) scale(.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
       .dtr-language-menu::-webkit-scrollbar { width: 8px; }
       .dtr-language-menu::-webkit-scrollbar-track { background: transparent; }
       .dtr-language-menu::-webkit-scrollbar-thumb { min-height: 48px; border: 2px solid transparent; border-radius: 999px; background: #d9d9d9; background-clip: content-box; }
       .dtr-language-menu::-webkit-scrollbar-thumb:hover { background: #bdbdbd; background-clip: content-box; }
-      .dtr-language-option { display: block; flex: 0 0 auto; width: 100%; padding: 8px 12px; border: 0; border-radius: 13px; color: inherit; background: transparent; font: inherit; font-size: 14px; text-align: start; cursor: pointer; transition: background-color 150ms ease, color 150ms ease; }
-      .dtr-language-option:hover, .dtr-language-option:focus-visible { background: #f5f5f5; color: #171717; outline: none; }
-      .dtr-language-option[aria-selected=true] { background: #eef1ff; color: #4058c8; font-weight: 600; }
+      .dtr-language-option { box-sizing: border-box; display: block; flex: 0 0 auto; width: 100%; padding: 4px 6px; border: 0; border-radius: 13px; color: #070707; background: transparent; font: inherit; font-size: 14px; line-height: 20px; text-align: start; cursor: pointer; transition: all 150ms cubic-bezier(.4, 0, .2, 1); }
+      .dtr-language-option:hover, .dtr-language-option:focus-visible { background: #f5f5f5; color: #141414; outline: none; }
+      .dtr-language-option[aria-selected=true] { color: #070707; font-weight: 500; }
       .dtr-primary { box-sizing: border-box; min-height: 44px; padding-inline: 16px; border: 1px solid transparent; border-radius: 16px; color: #fff; background: linear-gradient(#333, #121214); font-size: 14px; font-weight: 500; text-align: center; box-shadow: inset 0 1px rgb(255 255 255 / 18%), 0 1px 2px rgb(0 0 0 / 20%); transition: all 150ms cubic-bezier(.4, 0, .2, 1); }
       .dtr-primary:not(:disabled):hover { filter: brightness(.98); }
       .dtr-primary:not(:disabled):active { transform: translateY(1px); box-shadow: inset 0 1px 2px #0000001a; }
@@ -97,6 +98,7 @@ window.__ModuleLoader__.load({
       .dtr-settings { display: grid; gap: 16px; max-width: 760px; }
       .dtr-settings .dtr-text { min-height: 9rem; }
       .dtr-hint { margin: 0; font-size: 13px; }
+      @media (prefers-reduced-motion: reduce) { .dtr-language-menu, .dtr-language-option { animation: none; transition: none; } }
       @media (max-width: 760px) { .dtr-grid { grid-template-columns: minmax(0, 1fr); } .dtr-model { margin-inline-start: 0; } }
     `
 
