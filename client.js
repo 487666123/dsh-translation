@@ -35,7 +35,7 @@ window.__ModuleLoader__.load({
         sourcePlaceholder: '输入或粘贴原文',
         resultPlaceholder: '译文将在这里显示',
         translate: '翻译',
-        translating: '正在翻译…',
+        cancelTranslation: '取消翻译',
         languageLocale: 'zh-CN',
         prompt: '翻译提示词',
         promptHint: '用 {targetLanguage} 表示所选目标语言，翻译时会替换为语言名称。',
@@ -70,7 +70,7 @@ window.__ModuleLoader__.load({
         sourcePlaceholder: 'Type or paste the source text',
         resultPlaceholder: 'The translation will appear here',
         translate: 'Translate',
-        translating: 'Translating…',
+        cancelTranslation: 'Cancel translation',
         languageLocale: 'en',
         prompt: 'Translation prompt',
         promptHint: 'Use {targetLanguage} to insert the name of the selected language.',
@@ -173,7 +173,7 @@ window.__ModuleLoader__.load({
         min-width: 0;
         line-height: 18px;
       }
-      .dtr-model-trigger-name, .dtr-model-trigger-group, .dtr-model-trigger-effort {
+      .dtr-model-trigger-name, .dtr-model-trigger-effort {
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -181,12 +181,6 @@ window.__ModuleLoader__.load({
       }
       .dtr-model-trigger-name {
         flex: 1 1 auto;
-      }
-      .dtr-model-trigger-group {
-        max-width: 30%;
-        color: #666;
-        font-size: 12px;
-        font-weight: 400;
       }
       .dtr-model-trigger-effort {
         flex: 0 0 auto;
@@ -625,8 +619,7 @@ window.__ModuleLoader__.load({
       }
       const showEffort = effortOpen && efforts.length > 0
       const currentName = model?.name ?? current?.model ?? t('followDefault')
-      const currentGroupName = group ? providerName(group) : current?.provider
-      const currentLabel = [currentName, currentGroupName, effortLabel].filter(Boolean).join(' · ')
+      const currentLabel = [currentName, effortLabel].filter(Boolean).join(' · ')
       const disabled = locked || pending || !snapshot.writable
       const search = query.trim().toLowerCase()
       const visibleGroups = groups.map(group => ({
@@ -814,7 +807,6 @@ window.__ModuleLoader__.load({
         },
       }, h('span', { id: valueId, className: 'dtr-model-trigger-text' },
           h('span', { className: 'dtr-model-trigger-name' }, currentName),
-          currentGroupName && h('span', { className: 'dtr-model-trigger-group' }, currentGroupName),
           effortLabel && h('span', { className: 'dtr-model-trigger-effort' }, effortLabel)),
         h('span', { className: 'dtr-chevron', 'aria-hidden': true }))
       const popup = open && h('div', {
@@ -962,7 +954,12 @@ window.__ModuleLoader__.load({
         setError(null)
         setResult('')
         try {
-          await streamTranslation({ target, text: source }, controller.signal, setResult, setError)
+          await streamTranslation(
+            { target, text: source },
+            controller.signal,
+            text => { if (request.current === controller) setResult(text) },
+            error => { if (request.current === controller) setError(error) },
+          )
         } catch {
           if (request.current === controller) setError(timedOut ? 'timeout' : 'failed')
         } finally {
@@ -974,6 +971,14 @@ window.__ModuleLoader__.load({
         }
       }
 
+      function cancelTranslation() {
+        const controller = request.current
+        if (!controller) return
+        request.current = null
+        controller.abort()
+        setPending(false)
+      }
+
       function clearResult() {
         setResult('')
         setError(null)
@@ -981,6 +986,10 @@ window.__ModuleLoader__.load({
 
       function handleSourceKeyDown(event) {
         if (event.key !== 'Enter') return
+        if (request.current) {
+          event.preventDefault()
+          return
+        }
         const input = event.currentTarget
         if (event.shiftKey) {
           event.preventDefault()
@@ -1004,8 +1013,11 @@ window.__ModuleLoader__.load({
           h('label', { htmlFor: field + '-target' }, t('target')),
           h(LanguageSelect, { id: field + '-target', value: target, disabled: pending, names,
             label: t('target'), onChange: value => { setTarget(value); clearResult() } }),
-          h('button', { className: 'dtr-control dtr-primary', type: 'submit', disabled: pending || modelPending || !source.trim() },
-            t(pending ? 'translating' : 'translate')),
+          pending
+            ? h('button', { key: 'cancel', className: 'dtr-control dtr-primary', type: 'button',
+              onClick: cancelTranslation }, t('cancelTranslation'))
+            : h('button', { key: 'translate', className: 'dtr-control dtr-primary', type: 'submit',
+              disabled: modelPending || !source.trim() }, t('translate')),
           h(TranslationModel, { form, modelUi, t, locked: pending, pending: modelPending, setPending: setModelPending })),
         error && h('p', { className: 'dtr-error', role: 'alert' }, t(error)),
         h('div', { className: 'dtr-grid', 'aria-busy': pending },
