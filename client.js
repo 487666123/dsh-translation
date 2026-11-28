@@ -192,6 +192,7 @@ window.__ModuleLoader__.load({
         color: #666;
       }
       .dtr-model-menu {
+        --dtr-model-row-inset: 8px;
         inset-inline-end: 0;
         width: min(240px, calc(100vw - 48px));
       }
@@ -791,6 +792,7 @@ window.__ModuleLoader__.load({
         overflow-wrap: anywhere;
       }
       .dtr-model-group-title {
+        padding-inline: var(--dtr-model-row-inset);
         font-weight: 600;
       }
       .dtr-model-group {
@@ -804,7 +806,7 @@ window.__ModuleLoader__.load({
         justify-content: space-between;
         gap: 8px;
         min-height: 28px;
-        padding: 8px;
+        padding: 8px var(--dtr-model-row-inset);
         border-radius: 7px;
         font-size: 13px;
         line-height: 18px;
